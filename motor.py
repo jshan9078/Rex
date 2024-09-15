@@ -1,8 +1,9 @@
 import RPi.GPIO as GPIO
 import time
-from config import MOTOR_A_PINS, MOTOR_B_PINS, MOTOR_C_PINS, MOTOR_D_PINS, PWM_FREQUENCY
 
 class MotorDriver:
+    pwm_instances = {}  # Class-level dictionary to store PWM instances by pin
+
     def __init__(self, in1, in2, pwm_pin, pwm_freq=1000):
         """
         Initializes the motor driver for one motor.
@@ -16,15 +17,18 @@ class MotorDriver:
         self.in2 = in2
         self.pwm_pin = pwm_pin
 
-        # Setup GPIO pins
+        # Setup GPIO pins for direction control
         GPIO.setmode(GPIO.BCM)
         GPIO.setup(self.in1, GPIO.OUT)
         GPIO.setup(self.in2, GPIO.OUT)
-        GPIO.setup(self.pwm_pin, GPIO.OUT)
 
-        # Setup PWM
-        self.pwm = GPIO.PWM(self.pwm_pin, pwm_freq)
-        self.pwm.start(0)  # Start with PWM off
+        # Setup PWM only if it hasn't been set up already
+        if pwm_pin not in MotorDriver.pwm_instances:
+            GPIO.setup(self.pwm_pin, GPIO.OUT)
+            MotorDriver.pwm_instances[pwm_pin] = GPIO.PWM(self.pwm_pin, pwm_freq)
+            MotorDriver.pwm_instances[pwm_pin].start(0)  # Start PWM with 0% duty cycle
+
+        self.pwm = MotorDriver.pwm_instances[pwm_pin]
 
     def set_speed(self, speed):
         """
@@ -55,8 +59,8 @@ class MotorDriver:
         Clean up GPIO resources.
         """
         self.stop()
-        self.pwm.stop()
-        GPIO.cleanup()
+        # Do not stop or clean up PWM if it's shared by multiple motors
+        GPIO.cleanup([self.in1, self.in2])
 
 
 class DualMotorDriver:
