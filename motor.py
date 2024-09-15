@@ -1,5 +1,6 @@
 import RPi.GPIO as GPIO
 import time
+from config import MOTOR_A_PINS, MOTOR_B_PINS, MOTOR_C_PINS, MOTOR_D_PINS, PWM_FREQUENCY
 
 class MotorDriver:
     pwm_instances = {}  # Class-level dictionary to store PWM instances by pin
@@ -73,6 +74,8 @@ class DualMotorDriver:
         """
         self.motor_a = MotorDriver(*motor_a_pins)
         self.motor_b = MotorDriver(*motor_b_pins)
+        GPIO.setup(26, GPIO.OUT)
+        GPIO.output(26, GPIO.HIGH)
 
     def set_motor_a_speed(self, speed):
         self.motor_a.set_speed(speed)
@@ -97,8 +100,9 @@ class QuadMotorDriver:
         :param side1_pins: Tuple of tuples ((in1, in2, pwm_pin) for Motor A, (in1, in2, pwm_pin) for Motor B) for the first side
         :param side2_pins: Tuple of tuples ((in1, in2, pwm_pin) for Motor C, (in1, in2, pwm_pin) for Motor D) for the second side
         """
-        self.side1 = DualMotorDriver(*side1_pins)
-        self.side2 = DualMotorDriver(*side2_pins)
+        print("Initializing Motors!")
+        self.side1 = DualMotorDriver(side1_pins[0], side1_pins[1])  # Motor A and Motor B
+        self.side2 = DualMotorDriver(side2_pins[0], side2_pins[1])  # Motor C and Motor D
 
     def set_side1_speed(self, speed):
         self.side1.set_motor_a_speed(speed)
