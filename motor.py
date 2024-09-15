@@ -1,6 +1,6 @@
 import RPi.GPIO as GPIO
 import time
-from config import MOTOR_A_PINS, MOTOR_B_PINS, PWM_FREQUENCY
+from config import MOTOR_A_PINS, MOTOR_B_PINS, MOTOR_C_PINS, MOTOR_D_PINS, PWM_FREQUENCY
 
 class MotorDriver:
     def __init__(self, in1, in2, pwm_pin, pwm_freq=1000):
@@ -85,34 +85,64 @@ class DualMotorDriver:
         self.motor_b.cleanup()
 
 
+class QuadMotorDriver:
+    def __init__(self, side1_pins, side2_pins):
+        """
+        Initializes the driver for four motors (two per side).
+
+        :param side1_pins: Tuple of tuples ((in1, in2, pwm_pin) for Motor A, (in1, in2, pwm_pin) for Motor B) for the first side
+        :param side2_pins: Tuple of tuples ((in1, in2, pwm_pin) for Motor C, (in1, in2, pwm_pin) for Motor D) for the second side
+        """
+        self.side1 = DualMotorDriver(*side1_pins)
+        self.side2 = DualMotorDriver(*side2_pins)
+
+    def set_side1_speed(self, speed):
+        self.side1.set_motor_a_speed(speed)
+        self.side1.set_motor_b_speed(speed)
+
+    def set_side2_speed(self, speed):
+        self.side2.set_motor_a_speed(speed)
+        self.side2.set_motor_b_speed(speed)
+
+    def stop_all(self):
+        self.side1.stop_all()
+        self.side2.stop_all()
+
+    def cleanup(self):
+        self.side1.cleanup()
+        self.side2.cleanup()
+
+
 # Test Main App
 if __name__ == "__main__":
-    # Define the pin connections for Motor A and Motor B
-    motor_a_pins = MOTOR_A_PINS
-    motor_b_pins = MOTOR_B_PINS
+    # Define the pin connections for Motors A, B, C, and D
+    side1_pins = ((MOTOR_A_PINS[0], MOTOR_A_PINS[1], MOTOR_A_PINS[2]),
+                  (MOTOR_B_PINS[0], MOTOR_B_PINS[1], MOTOR_B_PINS[2]))
+    side2_pins = ((MOTOR_C_PINS[0], MOTOR_C_PINS[1], MOTOR_C_PINS[2]),
+                  (MOTOR_D_PINS[0], MOTOR_D_PINS[1], MOTOR_D_PINS[2]))
 
-    # Create an instance of the DualMotorDriver
-    motors = DualMotorDriver(motor_a_pins, motor_b_pins)
+    # Create an instance of the QuadMotorDriver
+    motors = QuadMotorDriver(side1_pins, side2_pins)
 
     try:
-        # Test Motor A forward at 50% speed
-        print("Motor A forward at 50% speed")
-        motors.set_motor_a_speed(50)
+        # Test Side 1 forward at 50% speed
+        print("Side 1 forward at 50% speed")
+        motors.set_side1_speed(50)
         time.sleep(2)
 
-        # Test Motor A backward at 75% speed
-        print("Motor A backward at 75% speed")
-        motors.set_motor_a_speed(-75)
+        # Test Side 1 backward at 75% speed
+        print("Side 1 backward at 75% speed")
+        motors.set_side1_speed(-75)
         time.sleep(2)
 
-        # Test Motor B forward at 60% speed
-        print("Motor B forward at 60% speed")
-        motors.set_motor_b_speed(60)
+        # Test Side 2 forward at 60% speed
+        print("Side 2 forward at 60% speed")
+        motors.set_side2_speed(60)
         time.sleep(2)
 
-        # Test Motor B backward at 40% speed
-        print("Motor B backward at 40% speed")
-        motors.set_motor_b_speed(-40)
+        # Test Side 2 backward at 40% speed
+        print("Side 2 backward at 40% speed")
+        motors.set_side2_speed(-40)
         time.sleep(2)
 
         # Stop all motors

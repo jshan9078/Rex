@@ -2,8 +2,9 @@
 
 # Motor Driver Pin Configurations
 MOTOR_A_PINS = (5, 6, 12)  # Motor A: AIN1=GPIO 5, AIN2=GPIO 6, PWMA=GPIO 12 (PWM0)
-MOTOR_B_PINS = (23, 24, 13)  # Motor B: BIN1=GPIO 23, BIN2=GPIO 24, PWMB=GPIO 13 (PWM1)
-
+MOTOR_B_PINS = (23, 24, 12)  # Motor B: BIN1=GPIO 23, BIN2=GPIO 24, PWMB=GPIO 13 (PWM1)
+MOTOR_C_PINS = (10, 9, 13)
+MOTOR_D_PINS = (11, 0, 13)
 # Motor Driver Standby Pin (if used, but it might not be needed based on the comment)
 MOTOR_DRIVER_STBY = 7  # GPIO 7 (CE1)
 
